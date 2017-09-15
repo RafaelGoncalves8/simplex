@@ -61,12 +61,23 @@ class Tableau(object):
 
     def mult_line_by(self, lin, num):
         """Multiply line lin by num."""
+        ans = [0]*self.columns
         for i in range(self.columns):
-            self.m[lin][i] *= num
+            ans[i] = self.m[lin][i] * num
+        return ans
 
 
     def mult_column_by(self, col, num):
         """Multiply column col by num."""
+        ans = [0]*self.lines
         for j in range(self.lines):
-            self.m[j][col] *= num
+            ans[j] = self.m[j][col] * num
+        return ans
+
+    def sum_to_line(self, l_tab, l_sum)
+        """Sum line l_sum to l_tab."""
+        ans = [0]*self.columns
+        for i in range(self.columns):
+            ans[i] = self.m[l_tab][i] + l_sum[i]
+        return ans
 
