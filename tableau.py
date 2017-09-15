@@ -74,7 +74,7 @@ class Tableau(object):
             ans[j] = self.m[j][col] * num
         return ans
 
-    def sum_to_line(self, l_tab, l_sum)
+    def sum_to_line(self, l_tab, l_sum):
         """Sum line l_sum to l_tab."""
         ans = [0]*self.columns
         for i in range(self.columns):
