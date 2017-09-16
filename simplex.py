@@ -51,14 +51,14 @@ class Simplex(object):
     def solve(self, verbose = True):
         if not self.is_possible():
             if verbose:
-                print("Initializing phase 1")
+                print("Initializing phase 1.")
             self.phase1()
             if verbose:
-                print("...phase 1 OK.")
+                print("...phase 1 OK.\n")
         else:
             if verbose:
                 print("All non-basic variables in 0 is possible",)
-                print("solution.")
+                print("solution.\n")
                 print("...skipping phase 1.\n")
         print("Initializing phase 2.")
         s = self.phase2(verbose)
@@ -66,9 +66,9 @@ class Simplex(object):
             print("...phase 2 OK.\n")
         if s == 0:
             print("Optimal solution:")
-            print("v = %f" % self.v, end="")
+            print("v = %.2f" % self.v, end="")
             for i in range(len(self.sol)):
-                print(", x%d = %f" % (i+1, self.sol[i]), end="")
+                print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
             return 0
         elif s == 1:
             print("Unlimited solution")
@@ -91,9 +91,10 @@ class Simplex(object):
         if verbose:
             print("Iteration %d" % i)
             print(self.tab)
-            print("v = %f" % self.v,end="")
-            for i in range(len(self.sol)):
-                print(", x%d = %f" % (i+1, self.sol[i]),end="")
+            print("v = %.2f" % self.v,end="")
+            for j in range(len(self.sol)):
+                print(", x%d = %.2f" % (j+1, self.sol[j]),end="")
+            print("\n")
         while(not self.is_best()):
             i += 1
             self.hist.append((self.tab.m, self.sol))
@@ -101,10 +102,11 @@ class Simplex(object):
             self.set_vars()
             if verbose:
                 print("Iteration %d" % i)
-                print(self.tab.m)
-                print("v = %f" % self.v),
-                for i in range(len(s.sol)):
-                    print(", x%d = %f" % (i+1, self.sol[i]))
+                print(self.tab)
+                print("v = %.2f" % self.v, end=""),
+                for j in range(len(self.sol)):
+                    print(", x%d = %.2f" % (j+1, self.sol[j]), end="")
+                print("\n")
         return 0
 
 
@@ -142,14 +144,15 @@ class Simplex(object):
 
         if verbose:
             print("Leave: x%d" % drop)
+            print("\n")
 
         # tableau
 
-        M[drop] = M[drop].mult_line_by(1/float(M[drop][enter]))
-        for i in range(M):
+        M[drop] = self.tab.mult_line_by(drop, 1/float(M[drop][enter]))
+        for i in range(len(M)):
             if i != drop:
-                M[i] = M.sum_to_line(i, M.mult_line_by(i, \
-                        (-1*M[i][enter])*float(M[drop][enter])))
+                M[i] = self.tab.sum_to_line(i, self.tab.mult_line_by(\
+                        drop, -1*M[i][enter]))
 
         return M
 
@@ -168,7 +171,7 @@ class Simplex(object):
     def is_best(self):
         """Return True if is optimal solution,
         otherwise return False"""
-        return any([e < 0 for e in self.tab.m[0][:-1]])
+        return not any([e < 0 for e in self.tab.m[0][:-1]])
 
 
 # class Simplex(object):
