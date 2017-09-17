@@ -33,7 +33,7 @@ class Simplex(object):
 
     def set_vars(self):
         """Set value and state (basis or not) of the vars."""
-        self.v = self.tab.m[0][-1]
+        self.v = -1*self.tab.m[0][-1]
         for i in range(self.tab.columns -1):
             count = 0
             for j in range(self.tab.lines):
@@ -132,13 +132,14 @@ class Simplex(object):
 
         # min value leaves basis
 
-        min_val = 0  # minimum value in RHS/(enter colum)
+        min_val = None  # minimum value in RHS/(enter colum)
         drop = None  # index in the list self.sol of the variable
                      # with minimum positive value
 
-        for i in range(len(M[:-1])):
-            if (M[i][enter] != 0 and M[i][-1]/float(M[i][enter])\
-                    and M[i][-1]/float(M[i][enter]) > 0):
+        for i in range(1, len(M)):
+            if ((M[i][enter] != 0 and \
+                    M[i][-1]/float(M[i][enter]) > 0) or\
+                    (min_val == None)):
                 drop = i
                 min_val = M[i][-1]/float(M[i][enter])
 
