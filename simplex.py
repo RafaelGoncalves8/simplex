@@ -6,6 +6,10 @@ class Simplex(object):
     def __init__(self, F, A, B):
         """F is the objective funcion, A is the restriction functions
         and B is the value of the restriction functions"""
+
+        assert len(F) == len(A[0])
+        assert len(A) == len(B)
+
         self.tab = tableau.Tableau(F, A, B) # main tableau
         self.iter = 0  # initial iteration for the methods next, prev
         self.hist = [] # historico de (tableaus, solutions)
@@ -13,6 +17,8 @@ class Simplex(object):
         self.sol  = [0]*len(F) # list of variables values
         self.basis = [] # variables states (1 = basis, 0 = non-basis)
         self.set_vars() # set variables initial values and states
+        self.mult = None # used in multiple solutions
+        self.y = []
 
 
     def __str__(self):
@@ -66,22 +72,56 @@ class Simplex(object):
             print("...phase 2 OK.\n")
         if s == 0:
             print("Optimal solution:")
+            print("Iterations: %d" % self.iter)
             print("v = %.2f" % self.v, end="")
             for i in range(len(self.sol)):
                 print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
             return 0
         elif s == 1:
-            print("Unlimited solution")
+            print("Multiple solutions for %s:" % self.mult)
+            print("Iterations: %d" % self.iter)
+            print("v = %.2f" % self.v, end="")
+            for i in range(len(self.sol)):
+                print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
             return 1
+        elif s == 2:
+            print("Unlimited solution")
+            print("Iterations: %d" % self.iter)
+            print("v and solutions tend to infinity")
+            return 2
         else:
             print("Impossible to solve")
-            return 2
+            return 3
 
 
-    def phase1(self, verbose):
+    def phase1(self, verbose = True):
         """First phase of the simplex algorithm."""
-        # new = Simplex()
-        new.solve()
+        for i in range(len(self.tab.obj_func)):
+            if (self.tab.obj_func[i]) == 0 and\
+                    any([self.tab.const_func[j][i] < 0 for j in\
+                    range(self.tab.lines -1)]):
+                        self.y.append(i)
+
+        le = len(self.y)
+        F = self.tab.obj_func + [0]*len(self.y)
+        A = []
+        k = 0
+
+        for i in range(len(self.tab.const_func)):
+            if i in self.y:
+                A.append(self.tab.const_func[i] + [1 if (j == k)\
+                        else 0 for j in range(le)])
+                k += 1
+            else:
+                A.append(self.tab.const_func[i] + [0]*le)
+
+        B = self.tab.const_vals
+
+        print("Inserted %d new variables...\n" % le)
+        print("Trying to solve new tableau...\n")
+
+        new = Simplex(F, A, B)
+        new.solve(verbose)
         return 0
 
 
@@ -98,7 +138,7 @@ class Simplex(object):
         while(not self.is_best()):
             i += 1
             self.hist.append((self.tab.m, self.sol))
-            self.tab.m = self.iterate(verbose)
+            state = self.iterate(verbose)
             self.set_vars()
             if verbose:
                 print("Iteration %d" % i)
@@ -107,7 +147,10 @@ class Simplex(object):
                 for j in range(len(self.sol)):
                     print(", x%d = %.2f" % (j+1, self.sol[j]), end="")
                 print("\n")
-        return 0
+
+        self.iter = i
+
+        return state
 
 
     def iterate(self, verbose):
@@ -137,11 +180,13 @@ class Simplex(object):
                      # with minimum positive value
 
         for i in range(1, len(M)):
-            if ((M[i][enter] != 0 and \
-                    M[i][-1]/float(M[i][enter]) > 0) or\
+            if (M[i][enter] > 0 or\
                     (min_val == None)):
                 drop = i
                 min_val = M[i][-1]/float(M[i][enter])
+
+        if drop == None:
+            return 2
 
         if verbose:
             print("Leave: x%d" % drop)
@@ -155,7 +200,13 @@ class Simplex(object):
                 M[i] = self.tab.sum_to_line(i, self.tab.mult_line_by(\
                         drop, -1*M[i][enter]))
 
-        return M
+        self.tab.m = M
+
+        if count([e < 0 for e in M[0][:-1]]) == 1:
+            self.mult = drop
+            return 1
+
+        return 0
 
 
     def is_possible(self):
@@ -173,124 +224,3 @@ class Simplex(object):
         """Return True if is optimal solution,
         otherwise return False"""
         return not any([e < 0 for e in self.tab.m[0][:-1]])
-
-
-# class Simplex(object):
-#     """Object that represents a linear programming problem, that can be
-#     solved by the simplex algorithm."""
-#     def __init__(self, F, A, B):
-#         """F is the objective funcion, A is the restriction functions
-#         and B is the value of the restriction functions"""
-#         self.iter = 0 # initial iteration for the functions next, prev
-#         self.f = F    # objective function
-#         self.a = A    # LHS of restriction equations
-#         self.b = B    # RHS of restriction equations
-#         self.m = []   # initial tableau
-#         self.t_hist = [] # history of tableaus of each iteration
-#         self.s_hist = [] # hisory of solutions for each iteration
-#         self.sol = None  # solution of the problem
-#         self.offset = 0  # offset for where end phase1 and begin pase2
-#
-#         self.m = [[0]*(len(A[0])+1) for i in range(len(A)+1)]
-#
-#         # creating tableau M
-#         for i in range(len(A)+1):
-#             self.m[0][i] = F[i] if len(F) > i else 0
-#             if i != 0:
-#                 self.m[i] = [e for e in A[i-1]+[B[i-1]]]
-#
-#
-#     def __str__(self):
-#         """Prints the tableau of each iteration and the solution."""
-#         i = 0
-#         th = self.t_hist
-#         sh = self.s_hist
-#         s = ""
-#         for t, s in zip(th, sh):
-#             s.join("Iteration %2d\n" % i)
-#             s.join("============\n\n")
-#             string_tab(t)
-#             s.join("\n\n")
-#             string_sol(s)
-#             s.join("\n\n")
-#             i += 1
-#         return s
-#
-#
-#     def phase1(self, verbose):
-#         """First phase of the simplex algorithm."""
-#         if verbose:
-#             print("Phase 1:\n")
-#         self.iter += 1
-#
-#         self.offset = self.iter
-#
-#
-    # def phase2(self, init, verbose):
-    #     """Second phase of the simplex algorithm."""
-    #     M = self.m
-    #     while (any(n < 0 for n in M[0][:-1])):
-    #         if verbose:
-    #             print("Phase 2:\n")
-    #         self.iter += 1
-    #
-    #         # min coefficient enters base
-    #
-    #         min_coef = 0 # minimum coefficient in the objective func
-    #         enter = None # index in the list self.sol of the variable
-    #                      # with minimum coefficient
-    #
-    #         for i in range(len(M[0][:-1])):
-    #             if (M[0][i] < min_coef):
-    #                 enter = i
-    #                 min_coef = M[0][i]
-    #
-    #         if verbose:
-    #             print("Enter: x%d" % enter)
-    #
-    #         # min value drops base
-    #
-    #         min_val = 0  # minimum value in RHS/(enter colum)
-    #         drop = None  # index in the list self.sol of the variable
-    #                      # with minimum positive value
-    #
-    #         for i in range(len(M[:-1])):
-    #             if (M[i][enter] != 0 and M[i][-1]/float(M[i][enter])\
-    #                     and M[i][-1]/float(M[i][enter]) > 0):
-    #                 drop = i
-    #                 min_val = M[i][-1]/float(M[i][enter])
-    #
-    #         if verbose:
-    #             print("Leave: x%d" % drop)
-    #
-    #         # escalonate matrix M
-    #
-    #         M[drop] = [M[drop][i]/M[drop][enter] for i in range(len(M))]
-    #         for l in M:
-    #             if l != M[drop]:
-    #                 l = [l[i] - M[drop][i] for i in range(len(M))]
-    #
-    #         print(string_tab(M))
-#
-#
-#     def solve(self, verbose = False):
-#         """Solves the problem and print its solutions."""
-#         return self.sol
-#
-#
-#     def next(self, verbose = False):
-#         """Prints the next tableau from the index self.iter."""
-#         self.iter += 1
-#         if verbose:
-#             print_tab(self.t_hist[self.iter])
-#             print_sol(self.s_hist[self.iter])
-#         return self.t_hist[self.iter], self.s_hist[self.iter]
-#
-#
-#     def prev(self, verbose = False):
-#         """Prints the previous tableau from the index self.iter."""
-#         self.iter -= 1
-#         if verbose:
-#             print_tab(self.t_hist[self.iter])
-#             print_sol(self.s_hist[self.iter])
-#         return self.t_hist[self.iter], self.s_hist[self.iter]
