@@ -15,7 +15,8 @@ class Simplex(object):
         self.hist = [] # historico de (tableaus, solutions)
         self.v    = 0  # best value for F til now
         self.sol  = [0]*len(F) # list of variables values
-        self.basis = [] # variables states (1 = basis, 0 = non-basis)
+        self.states = [] # variables states (1 = basis, 0 = non-basis)
+        self.basis = [] # order of variables in base
         self.set_vars() # set variables initial values and states
         self.mult = None # used in multiple solutions
         self.y = []
@@ -47,11 +48,32 @@ class Simplex(object):
                     val = self.tab.m[j][-1]
                     count += 1
             if count > 1:
-                self.basis.append(0) # not in basis
+                self.states.append(0) # not in basis
+                self.basis.append(i)
                 self.sol[i] = 0    # initial guess
             else:
-                self.basis.append(1) # in basis
+                self.states.append(1) # in basis
                 self.sol[i] = val  # value of RHS
+
+    def set_sol(self):
+        """Set value and state (basis or not) of the vars."""
+        self.v = -1*self.tab.m[0][-1]
+        k = 0
+        for i in range(self.tab.columns -1):
+            count = 0
+            for j in range(self.tab.lines):
+                if self.tab.m[j][i] != 0:
+                    val = self.tab.m[j][-1]
+                    count += 1
+            if count > 1:
+                self.states[i] # not in basis
+                self.sol[i] = 0
+            else:
+                self.states[i] # in basis
+                self.basis[k] = i
+                self.sol[i] = val  # value of RHS
+                k += 1
+
 
 
     def solve(self, verbose = True):
@@ -118,16 +140,24 @@ class Simplex(object):
         B = self.tab.const_vals
 
         print("Inserted %d new variables...\n" % le)
-        print("Trying to solve new tableau...\n")
 
         new = Simplex(F, A, B)
-        new.solve(verbose)
+
+        for i in range(1, len(A)+1):
+            for j in range(len(A[0]) +1):
+                new.tab.m[0][j] -= new.tab.m[i][j] if i in self.y else 0
+
+        print("Trying to solve new tableau...\n")
+
+        print(new.tab)
+        # new.solve(verbose)
         return 0
 
 
     def phase2(self, verbose):
         """Second phase of the simplex algorithm."""
         i = 0
+        state = 0
         if verbose:
             print("Iteration %d" % i)
             print(self.tab)
@@ -135,11 +165,17 @@ class Simplex(object):
             for j in range(len(self.sol)):
                 print(", x%d = %.2f" % (j+1, self.sol[j]),end="")
             print("\n")
-        while(not self.is_best()):
+        while(not self.is_best() and state == 0):
             i += 1
             self.hist.append((self.tab.m, self.sol))
             state = self.iterate(verbose)
-            self.set_vars()
+            self.set_sol()
+
+            if [e != 0 for e in self.tab.m[0][:-1]].count(True) <\
+                    (self.tab.columns - len(self.basis) -1):
+                        state = 1
+                        return 1
+
             if verbose:
                 print("Iteration %d" % i)
                 print(self.tab)
@@ -180,8 +216,9 @@ class Simplex(object):
                      # with minimum positive value
 
         for i in range(1, len(M)):
-            if (M[i][enter] > 0 or\
-                    (min_val == None)):
+            if (M[i][enter] > 0) and\
+                    ((drop == None) or (M[i][-1]/float(M[i][enter])\
+                    < min_val)):
                 drop = i
                 min_val = M[i][-1]/float(M[i][enter])
 
@@ -195,6 +232,7 @@ class Simplex(object):
         # tableau
 
         M[drop] = self.tab.mult_line_by(drop, 1/float(M[drop][enter]))
+
         for i in range(len(M)):
             if i != drop:
                 M[i] = self.tab.sum_to_line(i, self.tab.mult_line_by(\
