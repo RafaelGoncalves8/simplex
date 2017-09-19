@@ -202,7 +202,7 @@ class Simplex(object):
 
         self.tab.m = M
 
-        if count([e < 0 for e in M[0][:-1]]) == 1:
+        if [e < 0 for e in M[0][:-1]].count(True) == 1:
             self.mult = drop
             return 1
 
