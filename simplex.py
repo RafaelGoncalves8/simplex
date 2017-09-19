@@ -11,15 +11,17 @@ class Simplex(object):
         assert len(A) == len(B)
 
         self.tab = tableau.Tableau(F, A, B) # main tableau
-        self.iter = 0  # initial iteration for the methods next, prev
+        self.total_iter = 0  # initial iteration for the methods next, prev
+        self.iter1 = 0 # phase 1 iterations
+        self.iter2 = 0 # phase 2 iterations
         self.hist = [] # historico de (tableaus, solutions)
         self.v    = 0  # best value for F til now
-        self.sol  = [0]*len(F) # list of variables values
-        self.states = [] # variables states (1 = basis, 0 = non-basis)
-        self.basis = [] # order of variables in base
-        self.set_vars() # set variables initial values and states
-        self.mult = None # used in multiple solutions
-        self.y = []
+        # self.sol  = [0]*len(F) # list of variables values
+        # self.states = [] # variables states (1 = basis, 0 = non-basis)
+        # self.basis = [] # order of variables in base
+        self.update() # set variables values and states
+        # self.mult = None # used in multiple solutions
+        # self.y = []
 
 
     def __str__(self):
@@ -37,50 +39,20 @@ class Simplex(object):
             i += 1
         return s
 
-
-    def set_vars(self):
+    def update(self):
         """Set value and state (basis or not) of the vars."""
+        self.tab.set_vars()
         self.v = -1*self.tab.m[0][-1]
-        for i in range(self.tab.columns -1):
-            count = 0
-            for j in range(self.tab.lines):
-                if self.tab.m[j][i] != 0:
-                    val = self.tab.m[j][-1]
-                    count += 1
-            if count > 1:
-                self.states.append(0) # not in basis
-                self.sol[i] = 0    # initial guess
-            else:
-                self.basis.append(i)
-                self.states.append(1) # in basis
-                self.sol[i] = val  # value of RHS
-
-    def set_sol(self):
-        """Set value and state (basis or not) of the vars."""
-        self.v = -1*self.tab.m[0][-1]
-        k = 0
-        for i in range(self.tab.columns -1):
-            count = 0
-            for j in range(self.tab.lines):
-                if self.tab.m[j][i] != 0:
-                    val = self.tab.m[j][-1]
-                    count += 1
-            if count > 1:
-                self.states[i] # not in basis
-                self.sol[i] = 0
-            else:
-                self.states[i] # in basis
-                self.basis[k] = i
-                self.sol[i] = val  # value of RHS
-                k += 1
-
+        self.total_iter = self.iter1 + self.iter2
 
 
     def solve(self, verbose = True):
+        """Solve the simplex problem with the tableau
+        simplex algorithm."""
         if not self.is_possible():
             if verbose:
                 print("Initializing phase 1.")
-            self.phase1()
+            state = self.phase1()
             if verbose:
                 print("...phase 1 OK.\n")
         else:
@@ -88,32 +60,36 @@ class Simplex(object):
                 print("All non-basic variables in 0 is possible",)
                 print("solution.\n")
                 print("...skipping phase 1.\n")
-        print("Initializing phase 2.")
-        s = self.phase2(verbose)
-        if verbose:
-            print("...phase 2 OK.\n")
-        if s == 0:
-            print("Optimal solution:")
-            print("Iterations: %d" % self.iter)
-            print("v = %.2f" % self.v, end="")
-            for i in range(len(self.sol)):
-                print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
-            return 0
-        elif s == 1:
-            print("Multiple solutions for %s:" % self.mult)
-            print("Iterations: %d" % self.iter)
-            print("v = %.2f" % self.v, end="")
-            for i in range(len(self.sol)):
-                print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
-            return 1
-        elif s == 2:
-            print("Unlimited solution")
-            print("Iterations: %d" % self.iter)
-            print("v and solutions tend to infinity")
-            return 2
-        else:
-            print("Impossible to solve")
-            return 3
+        if state == 0:
+            print("Initializing phase 2.")
+            state, aux = self.phase2(verbose)
+            if verbose:
+                print("...phase 2 OK.\n")
+            self.update()
+            if state == 0:
+                print("Optimal solution:")
+                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                        (self.iter1, self.iter2, self.total_iter))
+                print("v = %.2f" % self.v, end="")
+                for i in range(len(self.sol)):
+                    print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
+                return 0
+            elif s == 1:
+                print("Multiple solutions for x%d:" % aux)
+                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                        (self.iter1, self.iter2, self.total_iter))
+                print("v = %.2f" % self.v, end="")
+                for i in range(len(self.sol)):
+                    print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
+                return 1
+            elif s == 2:
+                print("Unlimited solution")
+                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                        (self.iter1, self.iter2, self.total_iter))
+                print("v and solutions tend to infinity")
+                return 2
+        print("Impossible to solve")
+        return 3
 
 
     def phase1(self, verbose = True):

@@ -68,6 +68,7 @@ class Tableau(object):
         return m
 
     def set_vars(self):
+        """Set value and state of the variables of the tableau"""
         k = 0
         # set variables out of basis
         for j in len(self.columns):
