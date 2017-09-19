@@ -71,16 +71,16 @@ class Simplex(object):
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
-                for i in range(len(self.sol)):
-                    print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
+                for i in range(len(self.tab.vars)):
+                    print(", x%d = %.2f" % (i, self.sol[i]), end="")
                 return 0
             elif s == 1:
                 print("Multiple solutions for x%d:" % aux)
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
-                for i in range(len(self.sol)):
-                    print(", x%d = %.2f" % (i+1, self.sol[i]), end="")
+                for i in range(len(self.tab.vars)):
+                    print(", x%d = %.2f" % (i, self.sol[i]), end="")
                 return 1
             elif s == 2:
                 print("Unlimited solution")
@@ -94,6 +94,7 @@ class Simplex(object):
 
     def phase1(self, verbose = True):
         """First phase of the simplex algorithm."""
+        # TODO not working (recursion never stops)
         for i in range(len(self.tab.obj_func)):
             if (self.tab.obj_func[i]) == 0 and\
                     any([self.tab.const_func[j][i] < 0 for j in\
@@ -131,6 +132,7 @@ class Simplex(object):
 
     def phase2(self, verbose):
         """Second phase of the simplex algorithm."""
+        # TODO: multiple and unlimited not working. Vars index messed up 
         i = 0
         state = 0
         if verbose:
@@ -167,6 +169,7 @@ class Simplex(object):
     def iterate(self, verbose):
         """Iteration of the simplex algorithm. One variable leaves
         the basis and another enter in its place."""
+        # TODO" vars index messed up in the calcuations
         M = self.tab.m
         X = self.sol
 
