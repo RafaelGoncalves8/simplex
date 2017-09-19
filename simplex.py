@@ -49,9 +49,9 @@ class Simplex(object):
                     count += 1
             if count > 1:
                 self.states.append(0) # not in basis
-                self.basis.append(i)
                 self.sol[i] = 0    # initial guess
             else:
+                self.basis.append(i)
                 self.states.append(1) # in basis
                 self.sol[i] = val  # value of RHS
 
@@ -149,8 +149,7 @@ class Simplex(object):
 
         print("Trying to solve new tableau...\n")
 
-        print(new.tab)
-        # new.solve(verbose)
+        new.solve(verbose)
         return 0
 
 
