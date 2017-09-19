@@ -1,4 +1,4 @@
-import tableau
+from tableau import Tableau
 
 class Simplex(object):
     """Object that represents a linear programming problem that can be
@@ -10,18 +10,13 @@ class Simplex(object):
         assert len(F) == len(A[0])
         assert len(A) == len(B)
 
-        self.tab = tableau.Tableau(F, A, B) # main tableau
+        self.tab = Tableau(F, A, B) # main tableau
         self.total_iter = 0  # initial iteration for the methods next, prev
         self.iter1 = 0 # phase 1 iterations
         self.iter2 = 0 # phase 2 iterations
         self.hist = [] # historico de (tableaus, solutions)
         self.v    = 0  # best value for F til now
-        # self.sol  = [0]*len(F) # list of variables values
-        # self.states = [] # variables states (1 = basis, 0 = non-basis)
-        # self.basis = [] # order of variables in base
         self.update() # set variables values and states
-        # self.mult = None # used in multiple solutions
-        # self.y = []
 
 
     def __str__(self):
@@ -38,6 +33,7 @@ class Simplex(object):
             s += ("\n\n")
             i += 1
         return s
+
 
     def update(self):
         """Set value and state (basis or not) of the vars."""
