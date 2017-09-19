@@ -8,31 +8,38 @@ class Tableau(object):
         # objective function
         self.obj_func = F
 
-        # variables
-        self.vars = [0]*(len(F)-1)
-        self.vars_num = len(F)
-
         # constraints
         self.const_func = A
         self.const_vals = B
         self.const_nums = len(B)
 
+        # variables
+        self.vars = [0]*(len(F)-1)
+        self.vars_num = len(F)
+        self.num_vars_f = 0
+        self.basis = [0]*self.const_nums # variables in base
+        self.basis_num = self.const_nums # num of vars in basis
+
         #tableau
         self.columns = self.vars_num+1
         self.lines   = self.const_nums+1
         self.m = self.create_tab()
+        self.set_vars()
 
 
     def __str__(self):
         """Print the function being minimized/maximized, a dashed line
         and the expressions for the variables in the base."""
-        s = ""
+        s = "  1 |"
         for e in self.m[0]:
             s += (" %8.2f |" % e)
         s += ("\n")
         s += ("-"*len(s))
         s += ("\n")
+        k = 0
         for l in self.m[1:]:
+            s += (" x%d |" % self.basis[k])
+            k += 1
             for e in l:
                 s += (" %8.2f |" % e)
             s += ("\n")
@@ -56,7 +63,24 @@ class Tableau(object):
             m[i] = [ A[i-1][j] for j in range(self.columns-1)]
             m[i].append(B[i-1])
 
+        self.set_vars()
+
         return m
+
+    def set_vars(self):
+        k = 0
+        # set variables out of basis
+        for j in len(self.columns):
+            if [self.[i][j] != 0 for i in range(1,self.lines)]\
+                    .count(True) == 1:
+                        self.basis[k] = j
+                        k += 1
+                        self.val[j] = self.m[i][-1]
+            else:
+                self.val[j] = 0
+
+        self.num_vars_f = [True for e != 0 in m[0]].count(True)
+
 
 
     def mult_line_by(self, lin, num):
