@@ -11,28 +11,31 @@ class Simplex(object):
         assert len(A) == len(B)
 
         self.tab = Tableau(F, A, B) # main tableau
-        self.total_iter = 0  # initial iteration for the methods next, prev
+        self.total_iter = 0  # total number of iterations
         self.iter1 = 0 # phase 1 iterations
         self.iter2 = 0 # phase 2 iterations
         self.hist = [] # historico de (tableaus, solutions)
         self.v    = 0  # best value for F til now
         self.update() # set variables values and states
+        self.y = []
 
 
     def __str__(self):
         """Print the iterations of the simplex steps."""
-        i = 0
-        s = ""
-        for t, s in self.hist:
-            s += ("Iteration %2d\n" % i)
-            s += ("============\n\n")
-            s += t.__str__()
-            s += ("\n")
-            s += s[0]
-            s += (", " + str(e) for e in s[1])
-            s += ("\n\n")
-            i += 1
-        return s
+    #     TODO
+    #     i = 0
+    #     s = ""
+    #     for t, s in self.hist:
+    #         s += ("Iteration %2d\n" % i)
+    #         s += ("============\n\n")
+    #         s += t.__str__()
+    #         s += ("\n")
+    #         s += s[0]
+    #         s += (", " + str(e) for e in s[1])
+    #         s += ("\n\n")
+    #         i += 1
+    #     return s
+        return self.tab.__str__()
 
 
     def update(self):
@@ -45,6 +48,7 @@ class Simplex(object):
     def solve(self, verbose = True):
         """Solve the simplex problem with the tableau
         simplex algorithm."""
+        state = 0
         if not self.is_possible():
             if verbose:
                 print("Initializing phase 1.")
@@ -57,7 +61,8 @@ class Simplex(object):
                 print("solution.\n")
                 print("...skipping phase 1.\n")
         if state == 0:
-            print("Initializing phase 2.")
+            if verbose:
+                print("Initializing phase 2.")
             state, aux = self.phase2(verbose)
             if verbose:
                 print("...phase 2 OK.\n")
@@ -68,7 +73,7 @@ class Simplex(object):
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
                 for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % (i, self.sol[i]), end="")
+                    print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
                 return 0
             elif s == 1:
                 print("Multiple solutions for x%d:" % aux)
@@ -76,7 +81,7 @@ class Simplex(object):
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
                 for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % (i, self.sol[i]), end="")
+                    print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
                 return 1
             elif s == 2:
                 print("Unlimited solution")
@@ -128,46 +133,47 @@ class Simplex(object):
 
     def phase2(self, verbose):
         """Second phase of the simplex algorithm."""
-        # TODO: multiple and unlimited not working. Vars index messed up 
+        aux = None
         i = 0
         state = 0
         if verbose:
             print("Iteration %d" % i)
             print(self.tab)
             print("v = %.2f" % self.v,end="")
-            for j in range(len(self.sol)):
-                print(", x%d = %.2f" % (j+1, self.sol[j]),end="")
+            for j in range(len(self.tab.vars)):
+                print(", x%d = %.2f" % (j+1, self.tab.vars[j]),end="")
             print("\n")
         while(not self.is_best() and state == 0):
             i += 1
-            self.hist.append((self.tab.m, self.sol))
-            state = self.iterate(verbose)
-            self.set_sol()
+            self.hist.append((self.tab.m, self.tab.vars))
+            state, aux = self.iterate(verbose)
+            self.iter2 += 1
+            self.update()
 
             if [e != 0 for e in self.tab.m[0][:-1]].count(True) <\
-                    (self.tab.columns - len(self.basis) -1):
+                    (self.tab.columns - len(self.tab.basis) -1):
                         state = 1
-                        return 1
+                        return 1, aux
 
             if verbose:
                 print("Iteration %d" % i)
                 print(self.tab)
                 print("v = %.2f" % self.v, end=""),
-                for j in range(len(self.sol)):
-                    print(", x%d = %.2f" % (j+1, self.sol[j]), end="")
+                for j in range(len(self.tab.vars)):
+                    print(", x%d = %.2f" % (j+1, self.tab.vars[j]),\
+                            end="")
                 print("\n")
 
         self.iter = i
 
-        return state
+        return state, aux
 
 
     def iterate(self, verbose):
         """Iteration of the simplex algorithm. One variable leaves
         the basis and another enter in its place."""
-        # TODO" vars index messed up in the calcuations
         M = self.tab.m
-        X = self.sol
+        aux = None
 
         # min coefficient enters basis
 
@@ -197,10 +203,13 @@ class Simplex(object):
                 min_val = M[i][-1]/float(M[i][enter])
 
         if drop == None:
-            return 2
+            return 2, aux
+
+        leave = self.tab.basis[drop]
+        self.tab.basis[drop] = enter
 
         if verbose:
-            print("Leave: x%d" % drop)
+            print("Leave: x%d" % leave)
             print("\n")
 
         # tableau
@@ -215,10 +224,9 @@ class Simplex(object):
         self.tab.m = M
 
         if [e < 0 for e in M[0][:-1]].count(True) == 1:
-            self.mult = drop
-            return 1
+            return 1, leave
 
-        return 0
+        return 0, aux
 
 
     def is_possible(self):
@@ -226,7 +234,7 @@ class Simplex(object):
         for l in self.tab.m:
             val = 0
             for i in range(len(l[:-1])):
-                val += (self.sol[i])*l[i]
+                val += (self.tab.vars[i])*l[i]
             if val != l[-1]:
                 return False
         return True
