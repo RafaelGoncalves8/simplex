@@ -14,7 +14,7 @@ class Tableau(object):
         self.const_nums = len(B)
 
         # variables
-        self.vars = [0]*(len(F)-1)
+        self.vars = [0]*(len(F))
         self.vars_num = len(F)
         self.num_vars_f = 0
         self.basis = [0]*self.const_nums # variables in base
@@ -63,24 +63,26 @@ class Tableau(object):
             m[i] = [ A[i-1][j] for j in range(self.columns-1)]
             m[i].append(B[i-1])
 
-        self.set_vars()
-
         return m
 
     def set_vars(self):
         """Set value and state of the variables of the tableau"""
         k = 0
         # set variables out of basis
-        for j in len(self.columns):
-            if [self.[i][j] != 0 for i in range(1,self.lines)]\
-                    .count(True) == 1:
-                        self.basis[k] = j
-                        k += 1
-                        self.val[j] = self.m[i][-1]
+        for j in range(self.columns-1):
+            count = 0
+            for i in range(1, self.lines):
+                if self.m[i][j] != 0:
+                    count += 1
+                    aux = i
+            if count == 1:
+                self.basis[k] = j
+                k += 1
+                self.vars[j] = self.m[aux][-1]
             else:
-                self.val[j] = 0
+                self.vars[j] = 0
 
-        self.num_vars_f = [True for e != 0 in m[0]].count(True)
+        self.num_vars_f = [(e != 0) for e in self.m[0]].count(True)
 
 
 
