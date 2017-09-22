@@ -89,8 +89,9 @@ class Simplex(object):
             if state == 0:
                 if verbose:
                     print("Optimal solution:")
-                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                            (self.iter1, self.iter2, self.total_iter))
+                    print("Iterations: %d (phase 1) + %d (phase 2) = %d" \
+                            % (self.iter1, self.iter2,\
+                            self.total_iter))
                     print("v = %.2f" % self.v, end="")
                     for i in range(len(self.tab.vars)):
                         print(", x%d = %.2f" % \
@@ -102,8 +103,9 @@ class Simplex(object):
                 if verbose:
                     print("Multiple solutions")
                     print("Showing one optimal solution:")
-                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                            (self.iter1, self.iter2, self.total_iter))
+                    print("Iterations: %d (phase 1) + %d (phase 2) = %d" \
+                            % (self.iter1, self.iter2,\
+                            self.total_iter))
                     print("v = %.2f" % self.v, end="")
                     for i in range(len(self.tab.vars)):
                         print(", x%d = %.2f" % \
@@ -114,58 +116,47 @@ class Simplex(object):
             elif state == 2:
                 if verbose:
                     print("Unbounded solution")
-                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                            (self.iter1, self.iter2, self.total_iter))
+                    print("Iterations: %d (phase 1) + %d (phase 2) = %d" \
+                            % (self.iter1, self.iter2,\
+                            self.total_iter))
                     print("v and solutions tend to infinity.")
                 print("Done.")
                 return 2
-        print("Impossible to solve")
-        return 3
+            else:
+                print("Impossible to solve.")
+                return 3
+        print("Impossible to find initial values for variables.")
+        return 4
 
 
     def phase1(self, verbose = True):
         """First phase of the simplex algorithm."""
 
-        # for b in self.basis:
-        #     if self.tab.m[0][b] < 0:
-        #         new_columns[k] = [0 if i != basis
+        M = self.tab.m
+        F = self.tab.obj_func
+        A = self.tab.const_func
+        B = self.tab.const_vals
+
+        # Add columns to the constraints and to the obj function
+        for e in self.tab.y:
+            F.append(0)
+            for i in range(1,self.tab.lines):
+                if (i-1) == e[0]:
+                    A[i-1].append(1)
+                else:
+                    A[i-1].append(0)
+
+        phase_one = Simplex(F, A, B)
+        if phase_one.solve() != 0:
+            return 4
+        self.iter1 = phase_one.total_iter
+        for i in range(self.tab.lines):
+            for j in range(self.tab.columns):
+                self.tab.m[i][j] = phase_one.tab.m[i][j]
+
+        self.update()
 
         return 0
-
-        # TODO not working (recursion never stops)
-        # for i in range(len(self.tab.obj_func)):
-        #     if (self.tab.obj_func[i]) == 0 and\
-        #             any([self.tab.const_func[j][i] < 0 for j in\
-        #             range(self.tab.lines -1)]):
-        #                 self.y.append(i)
-        #
-        # le = len(self.y)
-        # F = self.tab.obj_func + [0]*len(self.y)
-        # A = []
-        # k = 0
-        #
-        # for i in range(len(self.tab.const_func)):
-        #     if i in self.y:
-        #         A.append(self.tab.const_func[i] + [1 if (j == k)\
-        #                 else 0 for j in range(le)])
-        #         k += 1
-        #     else:
-        #         A.append(self.tab.const_func[i] + [0]*le)
-        #
-        # B = self.tab.const_vals
-        #
-        # print("Inserted %d new variables...\n" % le)
-        #
-        # new = Simplex(F, A, B)
-        #
-        # for i in range(1, len(A)+1):
-        #     for j in range(len(A[0]) +1):
-        #         new.tab.m[0][j] -= new.tab.m[i][j] if i in self.y else 0
-        #
-        # print("Trying to solve new tableau...\n")
-        #
-        # new.solve(verbose)
-        # return 0
 
 
     def phase2(self, verbose):

@@ -19,6 +19,7 @@ class Tableau(object):
         self.num_vars_f = 0
         self.basis = [0]*self.const_nums # variables in base
         self.basis_num = self.const_nums # num of vars in basis
+        self.y = [] # variables for phase 1
 
         #tableau
         self.columns = self.vars_num+1
@@ -59,7 +60,7 @@ class Tableau(object):
         m[0].append(0)
 
         # other lines are constraints of base variables
-        for i in range(1,self.lines):
+        for i in range(1, self.lines):
             m[i] = [ A[i-1][j] for j in range(self.columns-1)]
             m[i].append(B[i-1])
 
@@ -75,9 +76,13 @@ class Tableau(object):
                 if self.m[i][j] != 0:
                     count += 1
                     aux = i
-            if count == 1:
+            if count == 1 and self.m[aux][j] == 1:
                 basis.append((aux, j))
                 self.vars[j] = self.m[aux][-1]
+            elif count == 1 and self.m[aux][j] == -1:
+                basis.append((aux, j))
+                self.vars[j] = self.m[aux][-1]
+                self.y.append((aux, j))
             else:
                 self.vars[j] = 0
 
