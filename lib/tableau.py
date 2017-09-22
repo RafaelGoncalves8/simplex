@@ -69,10 +69,11 @@ class Tableau(object):
     def set_vars(self):
         """Set value and state of the variables of the tableau"""
         basis = []
+        y = []
         # set variables out of basis
         for j in range(self.columns-1):
             count = 0
-            for i in range(1, self.lines):
+            for i in range(self.lines):
                 if self.m[i][j] != 0:
                     count += 1
                     aux = i
@@ -82,10 +83,11 @@ class Tableau(object):
             elif count == 1 and self.m[aux][j] == -1:
                 basis.append((aux, j))
                 self.vars[j] = self.m[aux][-1]
-                self.y.append((aux, j))
+                y.append((aux, j))
             else:
                 self.vars[j] = 0
 
+        self.y = y
         basis.sort(reverse=True)
 
         for k in range(self.basis_num):

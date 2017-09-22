@@ -68,9 +68,9 @@ class Simplex(object):
         if not self.is_possible():
             if verbose:
                 print("Initializing phase 1.")
-            state = self.phase1()
+            state = self.phase1(verbose)
             if verbose:
-                print("...phase 1 OK.\n")
+                print("...phase 1 done.\n")
         else:
             if verbose:
                 print("All non-basic variables in 0 is possible",)
@@ -84,7 +84,7 @@ class Simplex(object):
                 print("Initializing phase 2.")
             state, aux = self.phase2(verbose)
             if verbose:
-                print("...phase 2 OK.\n")
+                print("...phase 2 done.\n")
             self.update()
             if state == 0:
                 if verbose:
@@ -129,34 +129,79 @@ class Simplex(object):
         return 4
 
 
-    def phase1(self, verbose = True):
+    def phase1(self, verbose = False):
         """First phase of the simplex algorithm."""
-
+        state = 0
+        i = 0
         M = self.tab.m
-        F = self.tab.obj_func
+        F = [0]*(self.tab.columns-1)
         A = self.tab.const_func
         B = self.tab.const_vals
+        print(F)
 
         # Add columns to the constraints and to the obj function
         for e in self.tab.y:
-            F.append(0)
+            print("F will append 1")
+            F.append(1)
+            print(F)
             for i in range(1,self.tab.lines):
-                if (i-1) == e[0]:
+                if (i) == e[0]:
                     A[i-1].append(1)
                 else:
                     A[i-1].append(0)
 
+        # Add y to the basis
+        for j in range(len(F)):
+            if F[j] == 1:
+                for l in A:
+                    if l[j] == 1:
+                        F = [F[i] - l[i] for i in range(len(F))]
+
+        print(F)
+
+        # Create new tableau
         phase_one = Simplex(F, A, B)
-        if phase_one.solve() != 0:
-            return 4
-        self.iter1 = phase_one.total_iter
-        for i in range(self.tab.lines):
-            for j in range(self.tab.columns):
-                self.tab.m[i][j] = phase_one.tab.m[i][j]
+
+        if verbose:
+            print("Iteration %d" % i)
+            print(phase_one.tab)
+            print("\n")
+
+
+        # Solve
+        while(not phase_one.is_best() and state == 0):
+            i += 1
+            phase_one.hist.append((phase_one.tab.m, phase_one.tab.vars))
+            state, aux = phase_one.iterate(verbose)
+            self.iter1 += 1
+            phase_one.update()
+
+            if verbose:
+                print("Iteration %d" % i)
+                print(phase_one.tab)
+                print("\n")
+
+        if (state != 0):
+            state =  4
+        else:
+            for i in range(1,self.tab.lines):
+                for j in range(self.tab.columns-1):
+                    self.tab.m[i][j] = phase_one.tab.m[i][j]
+                self.tab.m[i][-1] = phase_one.tab.m[i][-1]
+
+        M = [e for e in self.tab.obj_func] + [0]
+
+        self.tab.m[0] 
+
+        for l in range(1,len(self.tab.m)):
+                self.tab.m[0] = self.tab.sum_to_line(0,\
+                        self.tab.mult_line_by(l,\
+                        -1*self.tab.m[0][phase_one.tab.basis[l-1]]))
 
         self.update()
+        print(self.tab)
 
-        return 0
+        return state
 
 
     def phase2(self, verbose):
@@ -191,7 +236,7 @@ class Simplex(object):
                             end="")
                 print("\n")
 
-        self.iter = i
+        self.iter2 = i
 
         return state, aux
 
