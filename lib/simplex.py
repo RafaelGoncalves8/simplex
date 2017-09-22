@@ -73,20 +73,23 @@ class Simplex(object):
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
                 for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
+                    print(", x%d = %.2f" % \
+                            (i, self.tab.vars[i]), end="")
                 print("\n")
                 return 0
             elif state == 1:
-                print("Multiple solutions for x%d:" % aux)
+                print("Multiple solutions")
+                print("Showing one optimal solution:")
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
                 print("v = %.2f" % self.v, end="")
                 for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
+                    print(", x%d = %.2f" % \
+                            (i, self.tab.vars[i]), end="")
                 print("\n")
                 return 1
             elif state == 2:
-                print("Unlimited solution")
+                print("Unbounded solution")
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
                 print("v and solutions tend to infinity")
@@ -162,7 +165,6 @@ class Simplex(object):
             if [e != 0 for e in self.tab.m[0][:-1]].count(True) <\
                     (self.tab.columns - len(self.tab.basis) -1):
                         state = 1
-                        return 1, aux
 
             if verbose:
                 print("Iteration %d" % i)
