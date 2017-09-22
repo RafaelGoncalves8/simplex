@@ -17,25 +17,41 @@ class Simplex(object):
         self.hist = [] # historico de (tableaus, solutions)
         self.v    = 0  # best value for F til now
         self.update() # set variables values and states
+        self.ans = 3  # type of problem
         self.y = []
 
 
     def __str__(self):
         """Print the iterations of the simplex steps."""
-    #     TODO
-    #     i = 0
-    #     s = ""
-    #     for t, s in self.hist:
-    #         s += ("Iteration %2d\n" % i)
-    #         s += ("============\n\n")
-    #         s += t.__str__()
-    #         s += ("\n")
-    #         s += s[0]
-    #         s += (", " + str(e) for e in s[1])
-    #         s += ("\n\n")
-    #         i += 1
-    #     return s
-        return self.tab.__str__()
+        s = self.tab.__str__()
+        s += "\n"
+        if self.ans == 0:
+            s += ("Optimal solution:\n")
+            s += ("Iterations: %d + %d = %d\n" % (self.iter1,\
+                    self.iter2, self.iter))
+            s += ("v = %.2f" % self.v)
+            for i in range(len(self.tab.vars)):
+                s += (", x%d = %.2f" % \
+                        (i, self.tab.vars[i]))
+            s += ("\n")
+        elif self.ans == 1:
+            s += ("Multiple solutions:\n")
+            s += ("Iterations: %d + %d = %d\n" % (self.iter1,\
+                    self.iter2, self.iter))
+            s += ("v = %.2f" % self.v)
+            for i in range(len(self.tab.vars)):
+                s += (", x%d = %.2f" % \
+                        (i, self.tab.vars[i]))
+            s += ("\n")
+        elif self.ans == 2:
+            s += ("Unbounded solutions:\n")
+            s += ("Iterations: %d + %d = %d\n" % (self.iter1,\
+                    self.iter2, self.iter))
+            s += ("Value and variables tend to infinity.\n")
+        elif self.ans == 3:
+            s += ("Impossible to solve.\n")
+
+        return s
 
 
     def update(self):
@@ -45,7 +61,7 @@ class Simplex(object):
         self.total_iter = self.iter1 + self.iter2
 
 
-    def solve(self, verbose = True):
+    def solve(self, verbose = False):
         """Solve the simplex problem with the tableau
         simplex algorithm."""
         state = 0
@@ -60,6 +76,9 @@ class Simplex(object):
                 print("All non-basic variables in 0 is possible",)
                 print("solution.\n")
                 print("...skipping phase 1.\n")
+
+        self.ans = state
+
         if state == 0:
             if verbose:
                 print("Initializing phase 2.")
@@ -68,31 +87,37 @@ class Simplex(object):
                 print("...phase 2 OK.\n")
             self.update()
             if state == 0:
-                print("Optimal solution:")
-                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                        (self.iter1, self.iter2, self.total_iter))
-                print("v = %.2f" % self.v, end="")
-                for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % \
-                            (i, self.tab.vars[i]), end="")
-                print("\n")
+                if verbose:
+                    print("Optimal solution:")
+                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                            (self.iter1, self.iter2, self.total_iter))
+                    print("v = %.2f" % self.v, end="")
+                    for i in range(len(self.tab.vars)):
+                        print(", x%d = %.2f" % \
+                                (i, self.tab.vars[i]), end="")
+                    print("\n")
+                print("Done.")
                 return 0
             elif state == 1:
-                print("Multiple solutions")
-                print("Showing one optimal solution:")
-                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                        (self.iter1, self.iter2, self.total_iter))
-                print("v = %.2f" % self.v, end="")
-                for i in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % \
-                            (i, self.tab.vars[i]), end="")
-                print("\n")
+                if verbose:
+                    print("Multiple solutions")
+                    print("Showing one optimal solution:")
+                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                            (self.iter1, self.iter2, self.total_iter))
+                    print("v = %.2f" % self.v, end="")
+                    for i in range(len(self.tab.vars)):
+                        print(", x%d = %.2f" % \
+                                (i, self.tab.vars[i]), end="")
+                    print("\n")
+                print("Done.")
                 return 1
             elif state == 2:
-                print("Unbounded solution")
-                print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
-                        (self.iter1, self.iter2, self.total_iter))
-                print("v and solutions tend to infinity")
+                if verbose:
+                    print("Unbounded solution")
+                    print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
+                            (self.iter1, self.iter2, self.total_iter))
+                    print("v and solutions tend to infinity.")
+                print("Done.")
                 return 2
         print("Impossible to solve")
         return 3
