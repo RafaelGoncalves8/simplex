@@ -132,7 +132,6 @@ class Simplex(object):
     def phase1(self, verbose = False):
         """First phase of the simplex algorithm."""
         state = 0
-        i = 0
         M = self.tab.m
         F = [0]*(self.tab.columns-1)
         A = self.tab.const_func
@@ -170,7 +169,6 @@ class Simplex(object):
 
         # Solve
         while(not phase_one.is_best() and state == 0):
-            i += 1
             phase_one.hist.append((phase_one.tab.m, phase_one.tab.vars))
             state, aux = phase_one.iterate(verbose)
             self.iter1 += 1
@@ -183,6 +181,7 @@ class Simplex(object):
 
         if (state != 0):
             state =  4
+
         else:
             for i in range(1,self.tab.lines):
                 for j in range(self.tab.columns-1):
@@ -190,8 +189,6 @@ class Simplex(object):
                 self.tab.m[i][-1] = phase_one.tab.m[i][-1]
 
         M = [e for e in self.tab.obj_func] + [0]
-
-        self.tab.m[0] 
 
         for l in range(1,len(self.tab.m)):
                 self.tab.m[0] = self.tab.sum_to_line(0,\
