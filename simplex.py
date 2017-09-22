@@ -75,7 +75,7 @@ class Simplex(object):
                 for i in range(len(self.tab.vars)):
                     print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
                 return 0
-            elif s == 1:
+            elif state == 1:
                 print("Multiple solutions for x%d:" % aux)
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
@@ -83,7 +83,7 @@ class Simplex(object):
                 for i in range(len(self.tab.vars)):
                     print(", x%d = %.2f" % (i, self.tab.vars[i]), end="")
                 return 1
-            elif s == 2:
+            elif state == 2:
                 print("Unlimited solution")
                 print("Iterations: %d (phase 1) + %d (phase 2)= %d" %\
                         (self.iter1, self.iter2, self.total_iter))
@@ -95,40 +95,47 @@ class Simplex(object):
 
     def phase1(self, verbose = True):
         """First phase of the simplex algorithm."""
-        # TODO not working (recursion never stops)
-        for i in range(len(self.tab.obj_func)):
-            if (self.tab.obj_func[i]) == 0 and\
-                    any([self.tab.const_func[j][i] < 0 for j in\
-                    range(self.tab.lines -1)]):
-                        self.y.append(i)
 
-        le = len(self.y)
-        F = self.tab.obj_func + [0]*len(self.y)
-        A = []
-        k = 0
+        # for b in self.basis:
+        #     if self.tab.m[0][b] < 0:
+        #         new_columns[k] = [0 if i != basis
 
-        for i in range(len(self.tab.const_func)):
-            if i in self.y:
-                A.append(self.tab.const_func[i] + [1 if (j == k)\
-                        else 0 for j in range(le)])
-                k += 1
-            else:
-                A.append(self.tab.const_func[i] + [0]*le)
-
-        B = self.tab.const_vals
-
-        print("Inserted %d new variables...\n" % le)
-
-        new = Simplex(F, A, B)
-
-        for i in range(1, len(A)+1):
-            for j in range(len(A[0]) +1):
-                new.tab.m[0][j] -= new.tab.m[i][j] if i in self.y else 0
-
-        print("Trying to solve new tableau...\n")
-
-        new.solve(verbose)
         return 0
+
+        # TODO not working (recursion never stops)
+        # for i in range(len(self.tab.obj_func)):
+        #     if (self.tab.obj_func[i]) == 0 and\
+        #             any([self.tab.const_func[j][i] < 0 for j in\
+        #             range(self.tab.lines -1)]):
+        #                 self.y.append(i)
+        #
+        # le = len(self.y)
+        # F = self.tab.obj_func + [0]*len(self.y)
+        # A = []
+        # k = 0
+        #
+        # for i in range(len(self.tab.const_func)):
+        #     if i in self.y:
+        #         A.append(self.tab.const_func[i] + [1 if (j == k)\
+        #                 else 0 for j in range(le)])
+        #         k += 1
+        #     else:
+        #         A.append(self.tab.const_func[i] + [0]*le)
+        #
+        # B = self.tab.const_vals
+        #
+        # print("Inserted %d new variables...\n" % le)
+        #
+        # new = Simplex(F, A, B)
+        #
+        # for i in range(1, len(A)+1):
+        #     for j in range(len(A[0]) +1):
+        #         new.tab.m[0][j] -= new.tab.m[i][j] if i in self.y else 0
+        #
+        # print("Trying to solve new tableau...\n")
+        #
+        # new.solve(verbose)
+        # return 0
 
 
     def phase2(self, verbose):
@@ -150,6 +157,9 @@ class Simplex(object):
             self.iter2 += 1
             self.update()
 
+            for e in self.tab.basis:
+                print(e)
+
             if [e != 0 for e in self.tab.m[0][:-1]].count(True) <\
                     (self.tab.columns - len(self.tab.basis) -1):
                         state = 1
@@ -158,9 +168,9 @@ class Simplex(object):
             if verbose:
                 print("Iteration %d" % i)
                 print(self.tab)
-                print("v = %.2f" % self.v, end=""),
+                print("v = %.2f" % self.v, end="")
                 for j in range(len(self.tab.vars)):
-                    print(", x%d = %.2f" % (j+1, self.tab.vars[j]),\
+                    print(", x%d = %.2f" % (j, self.tab.vars[j]),\
                             end="")
                 print("\n")
 
@@ -205,14 +215,17 @@ class Simplex(object):
         if drop == None:
             return 2, aux
 
-        leave = self.tab.basis[drop]
-        self.tab.basis[drop] = enter
+        leave = self.tab.basis[drop-1]
+        # self.tab.basis[drop-1] = enter
 
         if verbose:
             print("Leave: x%d" % leave)
             print("\n")
 
         # tableau
+
+        for e in self.tab.basis:
+            print(e)
 
         M[drop] = self.tab.mult_line_by(drop, 1/float(M[drop][enter]))
 
@@ -244,3 +257,4 @@ class Simplex(object):
         """Return True if is optimal solution,
         otherwise return False"""
         return not any([e < 0 for e in self.tab.m[0][:-1]])
+

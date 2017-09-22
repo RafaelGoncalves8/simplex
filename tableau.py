@@ -67,7 +67,7 @@ class Tableau(object):
 
     def set_vars(self):
         """Set value and state of the variables of the tableau"""
-        k = 0
+        basis = []
         # set variables out of basis
         for j in range(self.columns-1):
             count = 0
@@ -76,14 +76,18 @@ class Tableau(object):
                     count += 1
                     aux = i
             if count == 1:
-                self.basis[k] = j
-                k += 1
+                basis.append((aux, j))
                 self.vars[j] = self.m[aux][-1]
             else:
                 self.vars[j] = 0
 
-        self.num_vars_f = [(e != 0) for e in self.m[0]].count(True)
+        basis.sort(reverse=True)
 
+        for k in range(self.basis_num):
+            self.basis[k] = basis[-1][1]
+            basis.pop()
+
+        self.num_vars_f = [(e != 0) for e in self.m[0]].count(True)
 
 
     def mult_line_by(self, lin, num):
