@@ -1,6 +1,6 @@
 #! /bin/env python
 
-import simplex
+from lib import simplex
 
 def main():
     print("Give the coefficients of the objective function being minimized")
