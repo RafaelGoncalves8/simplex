@@ -1,28 +1,21 @@
 # Simplex
-Linear programming solving algorithm. Project for EA044 course.
-Implemented in Python 3.
+__Nome__: Rafael Gonçalves --- __RA__: 186062  
 
-## Usage:
+Algoritimo para calculo de problema de programação linear desenvolvido para a matéria EA044 e implementado usando Python 3.
 
-This package can be used for solving simple linear programming problems that don't need to be solved as fast as possible..
+## Uso:
 
-### For solving an LP optimization problem:
-
-Type in the terminal in the same folder where the file main.py is:  
+No terminal, na mesma pasta que o arquivo main.py digite:  
 `python -m main`.  
-Then give the coefficients of the function being minimized and type enter. Then on each line give the constraints coefficients and value separeted by spaces and type enter 2 times. Each constraint must be separated pressing enter once.  
-Make sure to give the constraints in the standard minimization format.
-The program should return the steps it took to solve the problem as well as the solution if any.    
-
-The standard format is when the objective function is of minimization and the constraints are equalities with additional variables added for representing inequalities    
-
-**Obs:** If you want to type the problem in a text file you can use it by typing:  
+Dê os coeficientes da função objetivo a ser minizada, em seguida os coeficientes das restrições e seu valor rhs na mesma linha, separada por espaços. Cada restrição deve estar em uma linha e separada por um Enter. Feito isso aperte Enter 2 vezes e o algoritimo deve resolver o problema.
+O problema deve estar na forma padrão para ser minizado.  
+**Obs:** Para usar com um arquivo de texto, digite:  
 `python -m main < <file>`  
-Where <file> is the file with the coefficients of the objective function in the first line and each constraint in the subsequent lines. Don't forget to put 2 blank lines in the end of the file.  
+Onde <file> é o arquivo de texto como descrito acima, com a função objetivo na primeira linha e cada restrição nas linhas subsequentes. Não esqueça de adicionar 2 linhas vazias no fim do arquivo.
 
-_Example_:  
+_Exemplo_:  
 
-lib/zero_not_feasible
+[lib/zero_not_feasible]
 ```
 1 2 0 0 0
 1 1 -1 0 0 2
@@ -31,14 +24,19 @@ lib/zero_not_feasible
 
 ```
 
-### For using the tableau or simplex class in lib folder:
-You can import simplex in python by typing `import lib.simplex` if you are in the same folder as main.
- - Create simplex model: `<model> = lib.Simplex(<F>, <A>, <B>)`
- - Solve model: `<model>.solve(<True|False>)` - default is False for verbosity.
- - See last tableau and solutions: `print(<model>)`
+### Examplos:
 
-## Examples:
-test/optimal
+### Teste 1:
+
+Minimizar  $v = -3x_0 -2x_1$  
+Sujeito a:  
+$2x_0 + 1x_1 +1x_2 \quad \quad \quad \quad \quad \quad = 18$  
+$2x_0 + 3x_1 \quad \quad \quad+ 1x_3 \quad \quad \quad = 42$  
+$3x_0 + 1x_1 \quad \quad \quad \quad \quad \quad +1x_4 = 24$  
+
+Solução:
+
+[test/optimal]
 ```
 Give the coefficients of the objective function being minimized
 >-3 -2 0 0 0 
@@ -111,8 +109,22 @@ Done.
 
 ```
 
-test/multiple
+---
+
+### Teste 2:
+
+Minimizar  $v = -0.3x_0 -0.2x_1 -0.1x_2$  
+Sujeito a:  
+$\quad 3x_0 + 2x_1 +1x_2 +1x_3 \quad \quad \quad \quad \quad \quad= 2$  
+$-1x_0 + 1x_1 \quad \quad \quad\quad \quad \quad+ 1x_4 \quad \quad \quad = 5$  
+$10x_0 \quad \quad \quad + 30x_2 \quad \quad \quad \quad \quad \quad -1x_5 = 10$  
+
+Solução:
+
+[test/multiple]
 ```
+Give the coefficients of the objective function being minimized
+>-0.3 -0.2 -0.1 0 0 0
 Give the coefficients of the left hand size of the constraints and the right hand size of the constraints in order
 >3 2 1 1 0 0 2
 >-1 1 0 0 1 0 5
@@ -177,7 +189,18 @@ v = -0.20, x0 = 0.62, x1 = 0.00, x2 = 0.12, x3 = 0.00, x4 = 5.62, x5 = 0.00
 Done.
 ```
 
-test/unbounded
+---
+
+### Teste 3:
+
+Minimizar  $v = -10x_0 -22x_1 -15x_2$  
+Sujeito a:  
+$1x_0 + 1x_1 -1x_2 +1x_3 \quad \quad \quad = 200$  
+$-1x_0 +1x_1 \quad \quad \quad  \quad \quad \quad + 1x_4 = 10$
+
+Solução:
+
+[test/unbounded]
 ```
 Give the coefficients of the objective function being minimized
 >-10 -22 -15 0 0
