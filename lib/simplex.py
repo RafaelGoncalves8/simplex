@@ -67,7 +67,7 @@ class Simplex(object):
         state = 0
         if not self.is_possible():
             if verbose:
-                print("Initializing phase 1.")
+                print("Initializing phase 1.\n")
             state = self.phase1(verbose)
             if verbose:
                 print("...phase 1 done.\n")
@@ -136,13 +136,10 @@ class Simplex(object):
         F = [0]*(self.tab.columns-1)
         A = self.tab.const_func
         B = self.tab.const_vals
-        print(F)
 
         # Add columns to the constraints and to the obj function
         for e in self.tab.y:
-            print("F will append 1")
             F.append(1)
-            print(F)
             for i in range(1,self.tab.lines):
                 if (i) == e[0]:
                     A[i-1].append(1)
@@ -156,13 +153,11 @@ class Simplex(object):
                     if l[j] == 1:
                         F = [F[i] - l[i] for i in range(len(F))]
 
-        print(F)
-
         # Create new tableau
         phase_one = Simplex(F, A, B)
 
         if verbose:
-            print("Iteration %d" % i)
+            print("Iteration 0")
             print(phase_one.tab)
             print("\n")
 
@@ -175,7 +170,7 @@ class Simplex(object):
             phase_one.update()
 
             if verbose:
-                print("Iteration %d" % i)
+                print("Iteration %d" % self.iter1)
                 print(phase_one.tab)
                 print("\n")
 
@@ -196,7 +191,6 @@ class Simplex(object):
                         -1*self.tab.m[0][phase_one.tab.basis[l-1]]))
 
         self.update()
-        print(self.tab)
 
         return state
 
