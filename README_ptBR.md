@@ -24,7 +24,7 @@ _Exemplo_:
 
 ```
 
-### Examplos:
+### Exemplos:
 
 ### Teste 1:
 
