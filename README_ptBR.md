@@ -1,4 +1,4 @@
-# Simplex
+# Projeto Computacional 1: Simplex
 __Nome__: Rafael Gonçalves --- __RA__: 186062  
 
 Algoritimo para calculo de problema de programação linear desenvolvido para a matéria EA044 e implementado usando Python 3.
@@ -6,12 +6,13 @@ Algoritimo para calculo de problema de programação linear desenvolvido para a 
 ## Uso:
 
 No terminal, na mesma pasta que o arquivo main.py digite:  
-`python -m main`.  
+`python -m main`  
 Dê os coeficientes da função objetivo a ser minizada, em seguida os coeficientes das restrições e seu valor rhs na mesma linha, separada por espaços. Cada restrição deve estar em uma linha e separada por um Enter. Feito isso aperte Enter 2 vezes e o algoritimo deve resolver o problema.
 O problema deve estar na forma padrão para ser minizado.  
+
 **Obs:** Para usar com um arquivo de texto, digite:  
 `python -m main < <file>`  
-Onde <file> é o arquivo de texto como descrito acima, com a função objetivo na primeira linha e cada restrição nas linhas subsequentes. Não esqueça de adicionar 2 linhas vazias no fim do arquivo.
+Onde `<file>` é o arquivo de texto como descrito acima, com a função objetivo na primeira linha e cada restrição nas linhas subsequentes. Não esqueça de adicionar 2 linhas vazias no fim do arquivo.
 
 _Exemplo_:  
 
@@ -40,7 +41,8 @@ Solução:
 ```
 Give the coefficients of the objective function being minimized
 >-3 -2 0 0 0 
-Give the coefficients of the left hand size of the constraints and the right hand size of the constraints in order
+Give the coefficients of the left hand size of the constraints and the right hand size of the
+constraints in order
 >2 1 1 0 0 18
 >2 3 0 1 0 42
 >3 1 0 0 1 24
@@ -125,7 +127,8 @@ Solução:
 ```
 Give the coefficients of the objective function being minimized
 >-0.3 -0.2 -0.1 0 0 0
-Give the coefficients of the left hand size of the constraints and the right hand size of the constraints in order
+Give the coefficients of the left hand size of the constraints and the right hand size of the
+constraints in order
 >3 2 1 1 0 0 2
 >-1 1 0 0 1 0 5
 >10 0 30 0 0 -1 10
@@ -204,7 +207,8 @@ Solução:
 ```
 Give the coefficients of the objective function being minimized
 >-10 -22 -15 0 0
-Give the coefficients of the left hand size of the constraints and the right hand size of the constraints in order
+Give the coefficients of the left hand size of the constraints and the right hand size of the
+constraints in order
 >1 1 -1 1 0 200
 >-1 1 0 0 1 10
 >
